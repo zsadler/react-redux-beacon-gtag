@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/react-redux-beacon-gtag/static/css/main.2cce8147.chunk.css",
+    "main.js": "/react-redux-beacon-gtag/static/js/main.c1490deb.chunk.js",
+    "main.js.map": "/react-redux-beacon-gtag/static/js/main.c1490deb.chunk.js.map",
+    "runtime~main.js": "/react-redux-beacon-gtag/static/js/runtime~main.1d701ffa.js",
+    "runtime~main.js.map": "/react-redux-beacon-gtag/static/js/runtime~main.1d701ffa.js.map",
+    "static/js/2.b41502e9.chunk.js": "/react-redux-beacon-gtag/static/js/2.b41502e9.chunk.js",
+    "static/js/2.b41502e9.chunk.js.map": "/react-redux-beacon-gtag/static/js/2.b41502e9.chunk.js.map",
+    "index.html": "/react-redux-beacon-gtag/index.html",
+    "precache-manifest.a42fc1bc1e864d9dcb3ba16db8bf0ea5.js": "/react-redux-beacon-gtag/precache-manifest.a42fc1bc1e864d9dcb3ba16db8bf0ea5.js",
+    "service-worker.js": "/react-redux-beacon-gtag/service-worker.js",
+    "static/css/main.2cce8147.chunk.css.map": "/react-redux-beacon-gtag/static/css/main.2cce8147.chunk.css.map",
+    "static/media/logo.svg": "/react-redux-beacon-gtag/static/media/logo.5d5d9eef.svg"
+  }
+}
