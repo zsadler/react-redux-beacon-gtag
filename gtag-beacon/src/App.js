@@ -1,26 +1,121 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { Component } from 'react';
+import { createStore, applyMiddleware } from 'redux';
+import { connect, Provider } from 'react-redux';
+import { createLogger } from 'redux-logger';
+import { createBrowserHistory as createHistory } from 'history';
+import { gaMiddleware as analyticsMiddleware }  from './event-helpers';
+
+import { Products } from './components/Products';
+import { Cart } from './components/Cart';
+import { Payment } from './components/Payment';
+import { OrderComplete } from './components/OrderComplete';
+import { reducer } from './reducers';
+import {
+  getItems, getNumItemsInCart, getTotalPriceInCart, getItemsInCart, getPaymentFormData, isEmailValid, isPhoneNumberValid, isCreditCardNumberValid, isBuyNowDisabled,
+} from './selectors';
+import {
+  itemAddedToCart, nameEntered, emailEntered, phoneNumberEntered, creditCardNumberEntered, changeRoute,
+} from './actions';
+
 import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const store = createStore(
+  reducer,
+  applyMiddleware(createLogger(), analyticsMiddleware)
+);
+
+// Set up router
+const history = createHistory();
+// for the initial load, update the state to match the requested route
+store.dispatch(changeRoute(history.location.pathname));
+// if the user updates the route manually, update the route in state
+history.listen(location => {
+  if (location.pathname !== store.getState().route) {
+    store.dispatch(changeRoute(location.pathname));
+  }
+});
+// update the route whenever the route changes in state
+store.subscribe(() => {
+  const route = store.getState().route;
+  if (route !== history.location.pathname) {
+    history.push(route);
+  }
+});
+
+const ConnectedStore = connect(
+  state => ({
+    items: getItems(state),
+    numItemsInCart: getNumItemsInCart(state),
+  }),
+  dispatch => ({
+    handleItemAddedToCart: (itemId, name, price) => dispatch(itemAddedToCart({itemId, name, price})),
+    handleViewCart: () => dispatch(changeRoute('/cart')),
+  })
+)(Products);
+
+const ConnectedCart = connect(
+  state => ({
+    total: getTotalPriceInCart(state),
+    itemsInCart: getItemsInCart(state),
+  }),
+  dispatch => ({
+    handleCheckout: () => dispatch(changeRoute('/payment')),
+  })
+)(Cart);
+
+const ConnectedPayment = connect(
+  state => {
+    const validationData = {
+      isNameValid: true,
+      isEmailValid: isEmailValid(state.email),
+      isPhoneNumberValid: isPhoneNumberValid(state.phoneNumber),
+      isCCNumberValid: isCreditCardNumberValid(state.ccNumber),
+    };
+    return {
+      validationData,
+      formData: getPaymentFormData(state),
+      isBuyNowDisabled: isBuyNowDisabled(state, validationData),
+    };
+  },
+  dispatch => ({
+    onNameEntered: name => dispatch(nameEntered(name)),
+    onEmailEntered: email => dispatch(emailEntered(email)),
+    onPhoneNumberEntered: phoneNumber => dispatch(phoneNumberEntered(phoneNumber)),
+    onCCNumberEntered: ccNumber => dispatch(creditCardNumberEntered(ccNumber)),
+    handleBuyNow: () => dispatch(changeRoute('/order-complete')),
+    handleBuyNowDisabled: () => dispatch({ type: 'BUY_NOW_ATTEMPTED' }),
+  })
+)(Payment);
+
+const Routes = connect(
+  state => ({ route: state.route })
+)(
+  function Router ({ route }) {
+    switch(route) {
+      case '/':
+        return <ConnectedStore />;
+      case '/cart':
+        return <ConnectedCart />;
+      case '/payment':
+        return <ConnectedPayment />;
+      case '/order-complete':
+        return <OrderComplete />;
+      default:
+        return <h1>Page Not Found</h1>;
+    }
+  }
+);
+
+class App extends Component {
+  render() {
+    return (
+      <Provider store={store}>
+        <div className="App">
+          <Routes />
+        </div>
+      </Provider>
+    );
+  }
 }
 
 export default App;
